@@ -1,39 +1,35 @@
-// Function to save quotes to local storage
-function saveQuotes() {
-  localStorage.setItem('quotes', JSON.stringify(quotes));
+// Notify the user of resolved conflicts
+function notifyUserOfUpdate() {
+  const notification = document.createElement('div');
+  notification.innerText = "Quotes have been updated from the server.";
+  notification.classList.add('notification');
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.remove();
+  }, 5000);
 }
 
-// Function to load quotes from local storage
-function loadQuotes() {
-  const storedQuotes = localStorage.getItem('quotes');
-  if (storedQuotes) {
-    quotes = JSON.parse(storedQuotes);
-  }
-}
+// Modify resolveConflicts to include user notification
+function resolveConflicts(serverQuotes) {
+  const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
+  let conflictsResolved = false;
+  
+  const combinedQuotes = serverQuotes.concat(localQuotes.filter(localQuote =>
+    !serverQuotes.some(serverQuote => serverQuote.text === localQuote.text)
+  ));
 
-// Call loadQuotes() when the page loads to initialize quotes from local storage
-window.onload = loadQuotes;
-
-// Modify addQuote function to save quotes after adding a new one
-function addQuote() {
-  const newQuoteText = document.getElementById('newQuoteText').value;
-  const newQuoteCategory = document.getElementById('newQuoteCategory').value;
-
-  if (newQuoteText.trim() === "" || newQuoteCategory.trim() === "") {
-    alert("Please enter both a quote and a category.");
-    return;
+  if (combinedQuotes.length !== localQuotes.length) {
+    conflictsResolved = true;
   }
 
-  const newQuote = { text: newQuoteText, category: newQuoteCategory };
-  quotes.push(newQuote);
-
-  // Clear input fields
-  document.getElementById('newQuoteText').value = "";
-  document.getElementById('newQuoteCategory').value = "";
-
-  // Save quotes to local storage
-  saveQuotes();
-
-  // Display the newly added quote
+  localStorage.setItem('quotes', JSON.stringify(combinedQuotes));
+  
+  // Update the displayed quotes
   showRandomQuote();
+
+  if (conflictsResolved) {
+    notifyUserOfUpdate();
+  }
 }
+
