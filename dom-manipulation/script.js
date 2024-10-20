@@ -1,17 +1,32 @@
-// Periodically fetch new quotes from the server (every 30 seconds)
-setInterval(fetchQuotesFromServer, 30000);
+const serverUrl = "https://jsonplaceholder.typicode.com/posts"; // Simulated server endpoint
 
-function resolveConflicts(serverQuotes) {
-  const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
-  
-  // Combine quotes from server and local, giving precedence to server quotes
-  const combinedQuotes = serverQuotes.concat(localQuotes.filter(localQuote =>
-    !serverQuotes.some(serverQuote => serverQuote.text === localQuote.text)
-  ));
+// Function to fetch quotes from the server
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(serverUrl);
+    const serverQuotes = await response.json();
+    
+    // Simulate conflict resolution by merging server and local quotes
+    resolveConflicts(serverQuotes);
+  } catch (error) {
+    console.error("Error fetching quotes from server:", error);
+  }
+}
 
-  // Save combined quotes to local storage
-  localStorage.setItem('quotes', JSON.stringify(combinedQuotes));
-
-  // Update the displayed quotes
-  showRandomQuote();
+// Function to simulate posting new quotes to the server
+async function postQuoteToServer(newQuote) {
+  try {
+    const response = await fetch(serverUrl, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newQuote),
+    });
+    
+    const postedQuote = await response.json();
+    console.log("Quote successfully posted:", postedQuote);
+  } catch (error) {
+    console.error("Error posting quote to server:", error);
+  }
 }
