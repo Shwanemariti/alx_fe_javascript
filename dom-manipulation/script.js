@@ -1,35 +1,17 @@
-// Notify the user of resolved conflicts
-function notifyUserOfUpdate() {
-  const notification = document.createElement('div');
-  notification.innerText = "Quotes have been updated from the server.";
-  notification.classList.add('notification');
-  document.body.appendChild(notification);
+// Periodically fetch new quotes from the server (every 30 seconds)
+setInterval(fetchQuotesFromServer, 30000);
 
-  setTimeout(() => {
-    notification.remove();
-  }, 5000);
-}
-
-// Modify resolveConflicts to include user notification
 function resolveConflicts(serverQuotes) {
   const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
-  let conflictsResolved = false;
   
+  // Combine quotes from server and local, giving precedence to server quotes
   const combinedQuotes = serverQuotes.concat(localQuotes.filter(localQuote =>
     !serverQuotes.some(serverQuote => serverQuote.text === localQuote.text)
   ));
 
-  if (combinedQuotes.length !== localQuotes.length) {
-    conflictsResolved = true;
-  }
-
+  // Save combined quotes to local storage
   localStorage.setItem('quotes', JSON.stringify(combinedQuotes));
-  
+
   // Update the displayed quotes
   showRandomQuote();
-
-  if (conflictsResolved) {
-    notifyUserOfUpdate();
-  }
 }
-
